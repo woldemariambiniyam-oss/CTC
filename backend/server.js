@@ -14,6 +14,13 @@ const examRoutes = require('./routes/exams');
 const certificateRoutes = require('./routes/certificates');
 const reportRoutes = require('./routes/reports');
 const pdfRoutes = require('./routes/pdf');
+const twoFactorRoutes = require('./routes/twoFactor');
+const passwordResetRoutes = require('./routes/passwordReset');
+const rankingRoutes = require('./routes/rankings');
+const questionBankRoutes = require('./routes/questionBank');
+const certificateCollectionRoutes = require('./routes/certificateCollection');
+const publicVerifyRoutes = require('./routes/publicVerify');
+const communicationRoutes = require('./routes/communication');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +56,13 @@ app.use('/api/exams', examRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/two-factor', twoFactorRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/rankings', rankingRoutes);
+app.use('/api/question-bank', questionBankRoutes);
+app.use('/api/certificate-collection', certificateCollectionRoutes);
+app.use('/api/public-verify', publicVerifyRoutes);
+app.use('/api/communication', communicationRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -68,18 +68,47 @@ router.get('/:id', authenticateToken, async (req, res, next) => {
 
     let questions = [];
     if (req.user.role === 'admin' || req.user.role === 'trainer' || attempts.length > 0) {
+      // Admin/trainer or after submission - show all questions with answers
       const [questionRows] = await pool.execute(
-        'SELECT * FROM exam_questions WHERE exam_id = ? ORDER BY question_order ASC',
+        `SELECT 
+          eq.*,
+          qb.category,
+          qb.skill_level
+        FROM exam_questions eq
+        LEFT JOIN question_bank qb ON eq.question_bank_id = qb.id
+        WHERE eq.exam_id = ? 
+        ORDER BY eq.question_order ASC`,
         [req.params.id]
       );
       questions = questionRows;
     } else {
       // For active exam, return questions without correct answers
-      const [questionRows] = await pool.execute(
-        'SELECT id, question_text, question_type, options, points, question_order FROM exam_questions WHERE exam_id = ? ORDER BY question_order ASC',
-        [req.params.id]
+      // If randomized, get trainee's specific question set
+      const [attempt] = await pool.execute(
+        'SELECT * FROM exam_attempts WHERE exam_id = ? AND trainee_id = ?',
+        [req.params.id, req.user.id]
       );
-      questions = questionRows;
+
+      if (attempt.length > 0 && attempt[0].randomized_questions) {
+        // Return randomized question set for this trainee
+        const questionIds = JSON.parse(attempt[0].randomized_questions);
+        const placeholders = questionIds.map(() => '?').join(',');
+        const [questionRows] = await pool.execute(
+          `SELECT id, question_text, question_type, options, points, question_order 
+           FROM exam_questions 
+           WHERE id IN (${placeholders})
+           ORDER BY question_order ASC`,
+          questionIds
+        );
+        questions = questionRows;
+      } else {
+        // Standard question set
+        const [questionRows] = await pool.execute(
+          'SELECT id, question_text, question_type, options, points, question_order FROM exam_questions WHERE exam_id = ? ORDER BY question_order ASC',
+          [req.params.id]
+        );
+        questions = questionRows;
+      }
     }
 
     res.json({
@@ -202,10 +231,29 @@ router.post('/:id/start', authenticateToken, async (req, res, next) => {
       return res.status(409).json({ error: 'Exam already attempted', attempt: existing[0] });
     }
 
+    // Check if exam uses randomized questions
+    const [examConfig] = await pool.execute(
+      'SELECT use_randomized_questions FROM examinations WHERE id = ?',
+      [examId]
+    );
+
+    let randomizedQuestions = null;
+    if (examConfig[0]?.use_randomized_questions) {
+      // Get random questions for this trainee
+      const [allQuestions] = await pool.execute(
+        'SELECT id FROM exam_questions WHERE exam_id = ? ORDER BY RAND()',
+        [examId]
+      );
+      
+      // Shuffle and select questions (or use all if less than needed)
+      const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+      randomizedQuestions = JSON.stringify(shuffled.map(q => q.id));
+    }
+
     // Create attempt
     const [result] = await pool.execute(
-      'INSERT INTO exam_attempts (trainee_id, exam_id, status) VALUES (?, ?, ?)',
-      [traineeId, examId, 'in_progress']
+      'INSERT INTO exam_attempts (trainee_id, exam_id, status, randomized_questions) VALUES (?, ?, ?, ?)',
+      [traineeId, examId, 'in_progress', randomizedQuestions]
     );
 
     const [attempt] = await pool.execute(

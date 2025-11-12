@@ -60,8 +60,8 @@ router.post('/generate', authenticateToken, authorizeRoles('admin', 'trainer'), 
     // Create certificate
     const [result] = await pool.execute(
       `INSERT INTO certificates 
-       (trainee_id, session_id, exam_attempt_id, certificate_number, issue_date, expiry_date, qr_code_url, qr_code_data, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (trainee_id, session_id, exam_attempt_id, certificate_number, issue_date, expiry_date, qr_code_url, qr_code_data, status, collection_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         traineeId,
         sessionId,
@@ -71,7 +71,8 @@ router.post('/generate', authenticateToken, authorizeRoles('admin', 'trainer'), 
         expiryDate,
         qrResult.qrCodeUrl,
         qrResult.qrCodeData,
-        'issued'
+        'issued',
+        'pending_collection'
       ]
     );
 

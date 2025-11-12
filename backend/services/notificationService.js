@@ -149,6 +149,39 @@ class NotificationService {
     await this.sendEmail(email, emailSubject, emailHtml);
     if (phone) await this.sendSMS(phone, smsMessage);
   }
+
+  async sendPasswordResetEmail(userId, email, firstName, resetUrl) {
+    const emailSubject = 'Password Reset Request';
+    const emailHtml = `
+      <h2>Password Reset Request</h2>
+      <p>Hello ${firstName},</p>
+      <p>You have requested to reset your password. Click the link below to reset it:</p>
+      <p><a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+      <p>Or copy this link: ${resetUrl}</p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <p>Best regards,<br>Coffee Training Center Team</p>
+    `;
+
+    await this.sendEmail(email, emailSubject, emailHtml);
+  }
+
+  async sendCertificateReadyForCollection(userId, email, phone, firstName, referenceCode) {
+    const emailSubject = 'Certificate Ready for Collection';
+    const emailHtml = `
+      <h2>Certificate Ready for Collection</h2>
+      <p>Hello ${firstName},</p>
+      <p>Your certificate is ready for in-person collection at the Coffee Training Center.</p>
+      <p><strong>Collection Reference Code: ${referenceCode}</strong></p>
+      <p>Please bring a valid ID when collecting your certificate.</p>
+      <p>Best regards,<br>Coffee Training Center Team</p>
+    `;
+
+    const smsMessage = `Your certificate is ready! Collection Code: ${referenceCode}. Bring valid ID to collect.`;
+
+    await this.sendEmail(email, emailSubject, emailHtml);
+    if (phone) await this.sendSMS(phone, smsMessage);
+  }
 }
 
 module.exports = new NotificationService();

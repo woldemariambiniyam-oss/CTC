@@ -1,0 +1,94 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import PrivateRoute from './components/PrivateRoute'
+import Navbar from './components/Navbar'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import Sessions from './pages/Sessions'
+import Queue from './pages/Queue'
+import Exams from './pages/Exams'
+import ExamTake from './pages/ExamTake'
+import Certificates from './pages/Certificates'
+import CertificateVerify from './pages/CertificateVerify'
+import Reports from './pages/Reports'
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <main className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/verify/:certificateNumber" element={<CertificateVerify />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/sessions"
+                element={
+                  <PrivateRoute>
+                    <Sessions />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/queue"
+                element={
+                  <PrivateRoute>
+                    <Queue />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/exams"
+                element={
+                  <PrivateRoute>
+                    <Exams />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/exams/:id/take"
+                element={
+                  <PrivateRoute>
+                    <ExamTake />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/certificates"
+                element={
+                  <PrivateRoute>
+                    <Certificates />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <PrivateRoute>
+                    <Reports />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </AuthProvider>
+  )
+}
+
+export default App
+
+

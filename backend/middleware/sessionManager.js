@@ -14,8 +14,8 @@ const sessionManager = {
     const sessionData = {
       userId,
       token,
-      ipAddress: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('user-agent'),
+      ipAddress: req ? (req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for'] || null) : null,
+      userAgent: req && typeof req.get === 'function' ? req.get('user-agent') : (req?.headers?.['user-agent'] || null),
       lastActivity: new Date(),
       expiresAt
     };
@@ -56,7 +56,43 @@ const sessionManager = {
   },
 
   async checkSessionTimeout(token) {
-    const session = activeSessions.get(token);
+    // First check memory
+    let session = activeSessions.get(token);
+    
+    // If not in memory, check database
+    if (!session) {
+      try {
+        const tokenHash = require('crypto').createHash('sha256').update(token).digest('hex');
+        const [sessions] = await pool.execute(
+          `SELECT us.*, u.id as user_id 
+           FROM user_sessions us
+           JOIN users u ON us.user_id = u.id
+           WHERE us.token_hash = ? AND us.is_active = TRUE AND us.expires_at > NOW()`,
+          [tokenHash]
+        );
+
+        if (sessions.length > 0) {
+          const dbSession = sessions[0];
+          // Restore to memory
+          const decoded = jwt.decode(token);
+          session = {
+            userId: dbSession.user_id,
+            token: token,
+            ipAddress: dbSession.ip_address,
+            userAgent: dbSession.user_agent,
+            lastActivity: new Date(dbSession.last_activity),
+            expiresAt: new Date(dbSession.expires_at)
+          };
+          activeSessions.set(token, session);
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.error('Error checking session in database:', error);
+        return false;
+      }
+    }
+
     if (!session) {
       return false;
     }

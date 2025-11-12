@@ -182,6 +182,27 @@ class NotificationService {
     await this.sendEmail(email, emailSubject, emailHtml);
     if (phone) await this.sendSMS(phone, smsMessage);
   }
+
+  async sendAccountInvitation(userId, email, firstName, role, temporaryPassword) {
+    const roleName = role === 'trainer' ? 'Trainer' : 'Administrator';
+    const emailSubject = `Account Created - ${roleName} Access`;
+    const emailHtml = `
+      <h2>Welcome to Coffee Training Center</h2>
+      <p>Hello ${firstName},</p>
+      <p>Your ${roleName} account has been created for the Coffee Training Center Management System.</p>
+      <p><strong>Your Login Credentials:</strong></p>
+      <ul>
+        <li>Email: ${email}</li>
+        <li>Temporary Password: ${temporaryPassword}</li>
+      </ul>
+      <p><strong>Important:</strong> Please change your password after your first login for security.</p>
+      <p>You can access the system at: <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}">${process.env.FRONTEND_URL || 'http://localhost:3000'}</a></p>
+      <p>If you have any questions, please contact the system administrator.</p>
+      <p>Best regards,<br>Coffee Training Center Team</p>
+    `;
+
+    await this.sendEmail(email, emailSubject, emailHtml);
+  }
 }
 
 module.exports = new NotificationService();

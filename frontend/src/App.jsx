@@ -12,6 +12,7 @@ import ExamTake from './pages/ExamTake'
 import Certificates from './pages/Certificates'
 import CertificateVerify from './pages/CertificateVerify'
 import Reports from './pages/Reports'
+import UserManagement from './pages/UserManagement'
 
 function App() {
   return (
@@ -77,6 +78,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Reports />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <PrivateRoute>
+                    <UserManagement />
                   </PrivateRoute>
                 }
               />

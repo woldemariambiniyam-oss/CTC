@@ -28,6 +28,9 @@ const Navbar = () => {
               {(user.role === 'admin' || user.role === 'trainer') && (
                 <Link to="/reports" className="hover:text-blue-200">Reports</Link>
               )}
+              {user.role === 'admin' && (
+                <Link to="/users" className="hover:text-blue-200">User Management</Link>
+              )}
               <span className="text-blue-200">Welcome, {user.firstName}</span>
               <button
                 onClick={handleLogout}

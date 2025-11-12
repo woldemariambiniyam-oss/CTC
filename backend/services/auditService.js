@@ -3,8 +3,8 @@ const pool = require('../config/database');
 class AuditService {
   async logAction(userId, action, resourceType = null, resourceId = null, details = null, req = null) {
     try {
-      const ipAddress = req ? (req.ip || req.connection.remoteAddress) : null;
-      const userAgent = req ? req.get('user-agent') : null;
+      const ipAddress = req ? (req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for'] || null) : null;
+      const userAgent = req && typeof req.get === 'function' ? req.get('user-agent') : (req?.headers?.['user-agent'] || null);
       const detailsJson = details ? JSON.stringify(details) : null;
 
       await pool.execute(

@@ -21,6 +21,7 @@ const questionBankRoutes = require('./routes/questionBank');
 const certificateCollectionRoutes = require('./routes/certificateCollection');
 const publicVerifyRoutes = require('./routes/publicVerify');
 const communicationRoutes = require('./routes/communication');
+const userRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,6 +49,28 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root route - API information
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Coffee Training Center Management System API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      sessions: '/api/sessions',
+      exams: '/api/exams',
+      certificates: '/api/certificates',
+      reports: '/api/reports',
+      twoFactor: '/api/two-factor',
+      rankings: '/api/rankings',
+      questionBank: '/api/question-bank',
+      publicVerify: '/api/public-verify',
+      communication: '/api/communication'
+    },
+    documentation: '/docs'
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
@@ -63,6 +86,7 @@ app.use('/api/question-bank', questionBankRoutes);
 app.use('/api/certificate-collection', certificateCollectionRoutes);
 app.use('/api/public-verify', publicVerifyRoutes);
 app.use('/api/communication', communicationRoutes);
+app.use('/api/users', userRoutes);
 
 // 404 handler
 app.use((req, res) => {
